@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"net/rpc"
+	"os"
 )
 
 type Client struct {
@@ -23,11 +25,153 @@ func (c *Client) init(userID string, htttpclient *rpc.Client) {
 
 func (c *Client) start() {
 	isValid := c.validateClient()
-	fmt.Println(isValid)
+	if isValid && c.userType == "U" {
+		c.userMenu()
+	} else if isValid && c.userType == "M" {
+		c.managerMenu()
+	} else {
+		fmt.Println("The userID is not valid Please enter a valid UserID.")
+	}
+}
+
+func (c *Client) userMenu() {
+	option := "Y"
+	fmt.Printf("Hello, %q \n", c.userID)
+	for option == "Y" {
+		printUserMenu()
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		option = scanner.Text()
+		var reply string
+		switch option {
+		case "1":
+			fmt.Println("Borrow Item Section :")
+			fmt.Println("Enter Item ID: ")
+			scanner.Scan()
+			itemID := scanner.Text()
+			fmt.Println("Enter for how many days you want to borrow ?")
+			scanner.Scan()
+			numberOfDays := scanner.Text()
+			c.httpclient.Call("Server.BorrowItem", []string{itemID, numberOfDays}, &reply)
+			fmt.Printf("Reply from server %q", reply)
+			break
+		case "2":
+			fmt.Println("Find Item Section :")
+			fmt.Println("Enter Item ID: ")
+			scanner.Scan()
+			itemID := scanner.Text()
+			c.httpclient.Call("Server.FindItem", itemID, &reply)
+			fmt.Printf("Reply from server %q", reply)
+			break
+		case "3":
+			fmt.Println("Return Item Section :")
+			fmt.Println("Enter Item ID: ")
+			scanner.Scan()
+			itemID := scanner.Text()
+			c.httpclient.Call("Server.ReturnItem", itemID, &reply)
+			fmt.Printf("Reply from server %q", reply)
+			break
+		case "N", "n":
+			fmt.Printf("User Quit : UserID : %q", c.userID)
+			break
+		default:
+			fmt.Println("Wrong Selection")
+			option = "Y"
+			break
+		}
+	}
+}
+
+func (c *Client) managerMenu() {
+	option := "Y"
+	fmt.Printf("Hello, %q \n", c.userID)
+	for option == "Y" {
+		printManagerMenu()
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		option = scanner.Text()
+		var reply string
+		switch option {
+		case "1":
+			fmt.Println("Add Item Section :")
+			fmt.Println("Enter Item ID: ")
+			scanner.Scan()
+			itemID := scanner.Text()
+			fmt.Println("Enter Item Name: ")
+			scanner.Scan()
+			itemName := scanner.Text()
+			fmt.Println("Enter Item Quantity: ")
+			scanner.Scan()
+			itemQTY := scanner.Text()
+			c.httpclient.Call("Server.AddItem", []string{itemID, itemName, itemQTY}, &reply)
+			fmt.Printf("Reply from server %q", reply)
+			break
+		case "2":
+			fmt.Println("Remove Item Section :")
+			fmt.Println("Enter Item ID: ")
+			scanner.Scan()
+			itemID := scanner.Text()
+			fmt.Println("Enter Quantity to remove: ")
+			scanner.Scan()
+			itemQTY := scanner.Text()
+			c.httpclient.Call("Server.AddItem", []string{itemID, itemQTY}, &reply)
+			fmt.Printf("Reply from server %q", reply)
+			break
+		case "3":
+			fmt.Println("List Item availability Section :")
+			c.httpclient.Call("Server.ListAvailability", c.userID, &reply)
+			fmt.Printf("Reply from server %q", reply)
+			break
+		case "4":
+			fmt.Println("Add User Section :")
+			fmt.Println("Enter New User ID: ")
+			scanner.Scan()
+			userID := scanner.Text()
+			c.httpclient.Call("Server.AddUser", userID, &reply)
+			fmt.Printf("Reply from server %q", reply)
+			break
+		case "5":
+			fmt.Println("Add Manager Section :")
+			fmt.Println("Enter New Manager ID: ")
+			scanner.Scan()
+			managerID := scanner.Text()
+			c.httpclient.Call("Server.AddManager", managerID, &reply)
+			fmt.Printf("Reply from server %q", reply)
+			break
+		case "6":
+			c.httpclient.Call("Server.Shutdown", c.userID, &reply)
+		case "N", "n":
+			fmt.Printf("User Quit : UserID : %q", c.userID)
+			break
+		default:
+			fmt.Println("Wrong Selection")
+			option = "Y"
+			break
+		}
+	}
 }
 
 func (c *Client) validateClient() bool {
 	var reply = true
 	c.httpclient.Call("Server.ValidateClient", c.userID, &reply)
 	return reply
+}
+
+func printUserMenu() {
+	fmt.Println("Features :")
+	fmt.Println("1) Borrow an item.")
+	fmt.Println("2) Find an Item.")
+	fmt.Println("3) Return an Item.")
+	fmt.Println("Press 'N' or 'n' to exit.")
+}
+
+func printManagerMenu() {
+	fmt.Println("Features :")
+	fmt.Println("1) Add an item.")
+	fmt.Println("2) Remove an Item.")
+	fmt.Println("3) List Item Availability.")
+	fmt.Println("4) Create user.")
+	fmt.Println("4) Create Manager.")
+	fmt.Println("6) Shutdown.")
+	fmt.Println("Press 'N' or 'n' to exit.")
 }

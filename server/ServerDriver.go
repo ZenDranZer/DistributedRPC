@@ -23,7 +23,6 @@ type Server struct {
 	users             map[string]User
 	managers          map[string]Manager
 	borrowed          map[User]map[Item]int
-	waitingQueue      map[string]map[string]int
 	borrowedItemsDays map[string]int
 	nextUserID        int
 	nextManagerID     int
@@ -34,7 +33,6 @@ func (s *Server) init(library string, port string) {
 	s.users = make(map[string]User)
 	s.books = make(map[string]Item)
 	s.borrowed = make(map[User]map[Item]int)
-	s.waitingQueue = make(map[string]map[string]int)
 	s.borrowedItemsDays = make(map[string]int)
 	s.library = library
 	s.port = port
