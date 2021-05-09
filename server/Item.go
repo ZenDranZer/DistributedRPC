@@ -1,32 +1,19 @@
 package main
 
-import (
-	"bufio"
-	"fmt"
-	"os"
-	"strconv"
-)
-
 type Item struct {
 	itemID    string
 	library   string
 	index     string
 	itemName  string
-	itemCount int64
+	itemCount int
 }
 
-func (i *Item) init(itemID string) {
+func (i *Item) init(itemID string, itemName string, itemCount int) {
 	i.itemID = itemID
-	i.library = string(itemID[0:3])
-	i.index = string(itemID[3:])
-	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Printf("The item id : %q \n", itemID)
-	fmt.Println("Enter Item name: ")
-	scanner.Scan()
-	i.itemName = scanner.Text()
-	fmt.Println("Enter Item count: ")
-	scanner.Scan()
-	i.itemCount, _ = strconv.ParseInt(scanner.Text(), 10, 64)
+	i.library = itemID[0:3]
+	i.index = itemID[3:]
+	i.itemName = itemName
+	i.itemCount = itemCount
 }
 
 func (i Item) getItemID() string {
@@ -37,10 +24,10 @@ func (i Item) getItemName() string {
 	return i.itemName
 }
 
-func (i Item) getItemCount() int64 {
+func (i Item) getItemCount() int {
 	return i.itemCount
 }
 
-func (i *Item) setItemCount(count int64) {
+func (i *Item) setItemCount(count int) {
 	i.itemCount = count
 }

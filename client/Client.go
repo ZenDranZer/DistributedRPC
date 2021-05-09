@@ -43,6 +43,7 @@ func (c *Client) userMenu() {
 		scanner.Scan()
 		option = scanner.Text()
 		var reply string
+		var err error
 		switch option {
 		case "1":
 			fmt.Println("Borrow Item Section :")
@@ -52,32 +53,34 @@ func (c *Client) userMenu() {
 			fmt.Println("Enter for how many days you want to borrow ?")
 			scanner.Scan()
 			numberOfDays := scanner.Text()
-			c.httpclient.Call("Server.BorrowItem", []string{itemID, numberOfDays}, &reply)
+			err = c.httpclient.Call("Server.BorrowItem", []string{itemID, numberOfDays}, &reply)
 			fmt.Printf("Reply from server %q", reply)
-			break
+			option = "Y"
 		case "2":
 			fmt.Println("Find Item Section :")
 			fmt.Println("Enter Item ID: ")
 			scanner.Scan()
 			itemID := scanner.Text()
-			c.httpclient.Call("Server.FindItem", itemID, &reply)
+			err = c.httpclient.Call("Server.FindItem", itemID, &reply)
 			fmt.Printf("Reply from server %q", reply)
-			break
+			option = "Y"
 		case "3":
 			fmt.Println("Return Item Section :")
 			fmt.Println("Enter Item ID: ")
 			scanner.Scan()
 			itemID := scanner.Text()
-			c.httpclient.Call("Server.ReturnItem", itemID, &reply)
+			err = c.httpclient.Call("Server.ReturnItem", itemID, &reply)
 			fmt.Printf("Reply from server %q", reply)
-			break
+			option = "Y"
 		case "N", "n":
-			fmt.Printf("User Quit : UserID : %q", c.userID)
-			break
+			fmt.Printf("User Quit : UserID : %q \n", c.userID)
 		default:
 			fmt.Println("Wrong Selection")
 			option = "Y"
-			break
+
+		}
+		if err != nil {
+			fmt.Println("Server side error. Please try again later.")
 		}
 	}
 }
@@ -91,6 +94,7 @@ func (c *Client) managerMenu() {
 		scanner.Scan()
 		option = scanner.Text()
 		var reply string
+		var err error
 		switch option {
 		case "1":
 			fmt.Println("Add Item Section :")
@@ -103,9 +107,9 @@ func (c *Client) managerMenu() {
 			fmt.Println("Enter Item Quantity: ")
 			scanner.Scan()
 			itemQTY := scanner.Text()
-			c.httpclient.Call("Server.AddItem", []string{itemID, itemName, itemQTY}, &reply)
+			err = c.httpclient.Call("Server.AddItem", []string{itemID, itemName, itemQTY}, &reply)
 			fmt.Printf("Reply from server %q", reply)
-			break
+			option = "Y"
 		case "2":
 			fmt.Println("Remove Item Section :")
 			fmt.Println("Enter Item ID: ")
@@ -114,46 +118,53 @@ func (c *Client) managerMenu() {
 			fmt.Println("Enter Quantity to remove: ")
 			scanner.Scan()
 			itemQTY := scanner.Text()
-			c.httpclient.Call("Server.AddItem", []string{itemID, itemQTY}, &reply)
+			err = c.httpclient.Call("Server.RemoveItem", []string{itemID, itemQTY}, &reply)
 			fmt.Printf("Reply from server %q", reply)
-			break
+			option = "Y"
 		case "3":
 			fmt.Println("List Item availability Section :")
-			c.httpclient.Call("Server.ListAvailability", c.userID, &reply)
+			err = c.httpclient.Call("Server.ListAvailability", c.userID, &reply)
 			fmt.Printf("Reply from server %q", reply)
-			break
+			option = "Y"
 		case "4":
 			fmt.Println("Add User Section :")
 			fmt.Println("Enter New User ID: ")
 			scanner.Scan()
 			userID := scanner.Text()
-			c.httpclient.Call("Server.AddUser", userID, &reply)
+			err = c.httpclient.Call("Server.AddUser", userID, &reply)
 			fmt.Printf("Reply from server %q", reply)
-			break
+			option = "Y"
 		case "5":
 			fmt.Println("Add Manager Section :")
 			fmt.Println("Enter New Manager ID: ")
 			scanner.Scan()
 			managerID := scanner.Text()
-			c.httpclient.Call("Server.AddManager", managerID, &reply)
+			err = c.httpclient.Call("Server.AddManager", managerID, &reply)
 			fmt.Printf("Reply from server %q", reply)
-			break
+			option = "Y"
 		case "6":
-			c.httpclient.Call("Server.Shutdown", c.userID, &reply)
+			err = c.httpclient.Call("Server.Shutdown", c.userID, &reply)
 		case "N", "n":
-			fmt.Printf("User Quit : UserID : %q", c.userID)
-			break
+			fmt.Printf("User Quit : UserID : %q\n", c.userID)
+			option = "N"
 		default:
 			fmt.Println("Wrong Selection")
 			option = "Y"
-			break
+
+		}
+		fmt.Println(option)
+		if err != nil {
+			fmt.Println("Server side error. Please try again later.")
 		}
 	}
 }
 
 func (c *Client) validateClient() bool {
 	var reply = true
-	c.httpclient.Call("Server.ValidateClient", c.userID, &reply)
+	err := c.httpclient.Call("Server.ValidateClient", c.userID, &reply)
+	if err != nil {
+		fmt.Println("Server side error. Please try again later.")
+	}
 	return reply
 }
 

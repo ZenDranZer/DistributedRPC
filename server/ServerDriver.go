@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 	"net/rpc"
+	"strconv"
 	"sync"
 )
 
@@ -50,6 +51,18 @@ func (s *Server) init(library string, port string) {
 	s.users[initUserID1001] = *initUser1001
 	s.users[initUserID1002] = *initUser1002
 
+	initItemID1001 := s.library + "1001"
+	initItemID1002 := s.library + "1002"
+	initItemID1003 := s.library + "1003"
+	var initItem1001 = new(Item)
+	var initItem1002 = new(Item)
+	var initItem1003 = new(Item)
+	initItem1001.init(initItemID1001, "Distributed Systems", 1)
+	initItem1002.init(initItemID1001, "Parallel Programming", 6)
+	initItem1003.init(initItemID1001, "Algorithm Designs", 7)
+	s.books[initItemID1001] = *initItem1001
+	s.books[initItemID1002] = *initItem1002
+	s.books[initItemID1003] = *initItem1003
 	s.run()
 }
 
@@ -103,6 +116,41 @@ func (s *Server) ValidateClient(clientID string, reply *bool) error {
 	}
 	log.Printf("Validate user request : %q \n Result : %t", clientID, isValid)
 	*reply = isValid
+	return nil
+}
+
+func (s *Server) AddItem(args []string, reply *string) error {
+	itemID := args[0]
+	itemName := args[1]
+	var newItem = new(Item)
+	quantity, _ := strconv.Atoi(args[2])
+	if item, ok := s.books[itemID]; ok {
+		item.itemCount += quantity
+		*reply = "Item already exist. Increased Item count."
+	} else {
+		newItem.init(itemID, itemName, quantity)
+		s.books[itemID] = *newItem
+		*reply = "Item added successfully to the server."
+	}
+	log.Printf("Request : Add Item | Server : %q | Reply : %q", s.library, *reply)
+	return nil
+}
+
+func (s *Server) RemoveItem(args []string, reply *string) error {
+	itemID := args[0]
+	quantity, _ := strconv.Atoi(args[1])
+	if item, ok := s.books[itemID]; ok {
+		if quantity == 0 || item.itemCount < quantity {
+			delete(s.books, itemID)
+			*reply = "Item completely removed from the server."
+		} else {
+			item.itemCount -= quantity
+			*reply = "Item already exist. Decreased Item count."
+		}
+	} else {
+		*reply = "Item does not exist in this server. Please send valid itemID."
+	}
+	log.Printf("Request : Add Item | Server : %q | Reply : %q", s.library, *reply)
 	return nil
 }
 
