@@ -7,10 +7,10 @@ type User struct {
 	outsourced [3]bool
 }
 
-func (u *User) init(userID string, library string, index string) {
+func (u *User) init(userID string, library string) {
 	u.userID = userID
 	u.library = library
-	u.index = index
+	u.index = userID[4:]
 }
 
 func (u User) getOutsourced() [3]bool {

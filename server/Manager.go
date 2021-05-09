@@ -6,10 +6,10 @@ type Manager struct {
 	index     string
 }
 
-func (m *Manager) init(managerID string, library string, index string) {
+func (m *Manager) init(managerID string, library string) {
 	m.managerID = managerID
 	m.library = library
-	m.index = index
+	m.index = managerID[4:]
 }
 
 func (m Manager) getManagerID() string {

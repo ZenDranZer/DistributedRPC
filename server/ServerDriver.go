@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"net/rpc"
@@ -14,8 +15,6 @@ const MON = "MON"
 const CONPORT = ":1301"
 const MCGPORT = ":1302"
 const MONPORT = ":1303"
-
-type API int
 
 type Server struct {
 	library           string
@@ -40,14 +39,14 @@ func (s *Server) init(library string, port string) {
 
 	initManagerID := s.library + "M" + "1001"
 	var initManager = new(Manager)
-	initManager.init(initManagerID, s.library, "1001")
+	initManager.init(initManagerID, s.library)
 	s.managers[initManagerID] = *initManager
 	initUserID1001 := s.library + "U" + "1001"
 	initUserID1002 := s.library + "U" + "1002"
 	var initUser1001 = new(User)
-	initUser1001.init(initUserID1001, s.library, "1001")
+	initUser1001.init(initUserID1001, s.library)
 	var initUser1002 = new(User)
-	initUser1002.init(initUserID1002, s.library, "1002")
+	initUser1002.init(initUserID1002, s.library)
 	s.users[initUserID1001] = *initUser1001
 	s.users[initUserID1002] = *initUser1002
 
@@ -63,6 +62,10 @@ func (s *Server) init(library string, port string) {
 	s.books[initItemID1001] = *initItem1001
 	s.books[initItemID1002] = *initItem1002
 	s.books[initItemID1003] = *initItem1003
+
+	s.nextUserID = 1003
+	s.nextManagerID = 1002
+
 	s.run()
 }
 
@@ -151,6 +154,36 @@ func (s *Server) RemoveItem(args []string, reply *string) error {
 		*reply = "Item does not exist in this server. Please send valid itemID."
 	}
 	log.Printf("Request : Add Item | Server : %q | Reply : %q", s.library, *reply)
+	return nil
+}
+
+func (s *Server) ListAvailability(managerID string, reply *[]string) error {
+	var availableItems []string
+	for _, item := range s.books {
+		str := fmt.Sprintf("Item Name: %s Item Quantity: %d ", item.itemName, item.itemCount)
+		availableItems = append(availableItems, str)
+	}
+	*reply = availableItems
+	return nil
+}
+
+func (s *Server) AddUser(managerID string, reply *string) error {
+	userID := fmt.Sprintf("%sU%d", s.library, s.nextUserID)
+	newUser := new(User)
+	newUser.init(userID, s.library)
+	s.users[userID] = *newUser
+	s.nextUserID++
+	*reply = fmt.Sprintf("New user added with UserID: %s", userID)
+	return nil
+}
+
+func (s *Server) AddManager(managerID string, reply *string) error {
+	userID := fmt.Sprintf("%sM%d", s.library, s.nextManagerID)
+	newManager := new(Manager)
+	newManager.init(userID, s.library)
+	s.managers[userID] = *newManager
+	s.nextManagerID++
+	*reply = fmt.Sprintf("New user added with UserID: %s", userID)
 	return nil
 }
 

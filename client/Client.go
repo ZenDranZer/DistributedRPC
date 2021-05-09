@@ -94,6 +94,7 @@ func (c *Client) managerMenu() {
 		scanner.Scan()
 		option = scanner.Text()
 		var reply string
+		var multiReply []string
 		var err error
 		switch option {
 		case "1":
@@ -123,15 +124,15 @@ func (c *Client) managerMenu() {
 			option = "Y"
 		case "3":
 			fmt.Println("List Item availability Section :")
-			err = c.httpclient.Call("Server.ListAvailability", c.userID, &reply)
-			fmt.Printf("Reply from server %q", reply)
+			err = c.httpclient.Call("Server.ListAvailability", c.userID, &multiReply)
+			fmt.Println("Reply from server")
+			for _, str := range multiReply {
+				fmt.Println(str)
+			}
 			option = "Y"
 		case "4":
 			fmt.Println("Add User Section :")
-			fmt.Println("Enter New User ID: ")
-			scanner.Scan()
-			userID := scanner.Text()
-			err = c.httpclient.Call("Server.AddUser", userID, &reply)
+			err = c.httpclient.Call("Server.AddUser", c.userID, &reply)
 			fmt.Printf("Reply from server %q", reply)
 			option = "Y"
 		case "5":
@@ -142,8 +143,6 @@ func (c *Client) managerMenu() {
 			err = c.httpclient.Call("Server.AddManager", managerID, &reply)
 			fmt.Printf("Reply from server %q", reply)
 			option = "Y"
-		case "6":
-			err = c.httpclient.Call("Server.Shutdown", c.userID, &reply)
 		case "N", "n":
 			fmt.Printf("User Quit : UserID : %q\n", c.userID)
 			option = "N"
@@ -152,7 +151,6 @@ func (c *Client) managerMenu() {
 			option = "Y"
 
 		}
-		fmt.Println(option)
 		if err != nil {
 			fmt.Println("Server side error. Please try again later.")
 		}
@@ -169,7 +167,7 @@ func (c *Client) validateClient() bool {
 }
 
 func printUserMenu() {
-	fmt.Println("Features :")
+	fmt.Println("\nFeatures :")
 	fmt.Println("1) Borrow an item.")
 	fmt.Println("2) Find an Item.")
 	fmt.Println("3) Return an Item.")
@@ -177,12 +175,11 @@ func printUserMenu() {
 }
 
 func printManagerMenu() {
-	fmt.Println("Features :")
+	fmt.Println("\nFeatures :")
 	fmt.Println("1) Add an item.")
 	fmt.Println("2) Remove an Item.")
 	fmt.Println("3) List Item Availability.")
 	fmt.Println("4) Create user.")
 	fmt.Println("4) Create Manager.")
-	fmt.Println("6) Shutdown.")
 	fmt.Println("Press 'N' or 'n' to exit.")
 }
