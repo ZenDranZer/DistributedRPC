@@ -53,23 +53,31 @@ func (c *Client) userMenu() {
 			fmt.Println("Enter for how many days you want to borrow ?")
 			scanner.Scan()
 			numberOfDays := scanner.Text()
-			err = c.httpclient.Call("Server.BorrowItem", []string{itemID, numberOfDays}, &reply)
+			err = c.httpclient.Call("Server.BorrowItem", []string{itemID, numberOfDays, c.userID}, &reply)
 			fmt.Printf("Reply from server %q", reply)
 			option = "Y"
 		case "2":
-			fmt.Println("Find Item Section :")
-			fmt.Println("Enter Item ID: ")
+			fmt.Println("Find Item by Name Section :")
+			fmt.Println("Enter Item Name: ")
 			scanner.Scan()
-			itemID := scanner.Text()
-			err = c.httpclient.Call("Server.FindItem", itemID, &reply)
+			itemName := scanner.Text()
+			err = c.httpclient.Call("Server.FindItemByName", itemName, &reply)
 			fmt.Printf("Reply from server %q", reply)
 			option = "Y"
 		case "3":
+			fmt.Println("Find Item by ID Section :")
+			fmt.Println("Enter Item ID: ")
+			scanner.Scan()
+			itemID := scanner.Text()
+			err = c.httpclient.Call("Server.FindItemByID", itemID, &reply)
+			fmt.Printf("Reply from server %q", reply)
+			option = "Y"
+		case "4":
 			fmt.Println("Return Item Section :")
 			fmt.Println("Enter Item ID: ")
 			scanner.Scan()
 			itemID := scanner.Text()
-			err = c.httpclient.Call("Server.ReturnItem", itemID, &reply)
+			err = c.httpclient.Call("Server.ReturnItem", []string{itemID, c.userID}, &reply)
 			fmt.Printf("Reply from server %q", reply)
 			option = "Y"
 		case "N", "n":
@@ -169,8 +177,9 @@ func (c *Client) validateClient() bool {
 func printUserMenu() {
 	fmt.Println("\nFeatures :")
 	fmt.Println("1) Borrow an item.")
-	fmt.Println("2) Find an Item.")
-	fmt.Println("3) Return an Item.")
+	fmt.Println("2) Find an Item by Name.")
+	fmt.Println("3) Find an Item by ID.")
+	fmt.Println("4) Return an Item.")
 	fmt.Println("Press 'N' or 'n' to exit.")
 }
 
